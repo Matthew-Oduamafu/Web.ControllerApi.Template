@@ -355,9 +355,76 @@ healthchecksdb
 
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
+Migrations/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+
+## JetBrains Rider ##
+.idea/
+*.rider*
+
+## Built Application Files ##
+bin/
+obj/
+
+## User-specific files ##
+*.rsuser
+*.user
+*.userosscache
+*.suo
+*.dbmdl
+*.dbproj.schemaview
+*.jfm
+*.pfx
+*.publishsettings
+orleans.codegen.cs
+
+## appsettings.Development.json ignored by default since Update 3 ##
+appsettings.Development.json
+
+## Windows image file caches ##
+Thumbs.db
+ehthumbs.db
+
+## Folder config file ##
+Desktop.ini
+
+## Recycle Bin used on file shares ##
+$RECYCLE.BIN/
+
+## VS Code directories ##
+.vscode/
+
+## Visual Studio ##
+*.vs/
+*.vdx
+*.vss
+*.vst
+*.vsw
+
+## ASP.NET Scaffolding ##
+ScaffoldingReadMe.txt
+
+## Others ##
+*.log
+*.bak
+*.bak.*
+*.tmp
+*.tmp.*
+*.swp
+*.swx
+*.swo
+*.tar
+*.tar.*
+*.gz
+*.tar.gz
+*.tgz
+*.zip
+*.rar
+.DS_Store
+node_modules/
