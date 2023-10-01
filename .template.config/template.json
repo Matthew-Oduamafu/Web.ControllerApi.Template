@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Matthew Oduamafu",
+  "classifications": ["C#", "WebAPI"],
+  "identity": "Web.ControllerApi.Template",
+  "name": "ASP.NET Core Controller Api Template",
+  "shortName": "Web-ControllerApi-API-PG",
+  "sourceName": "Web.ControllerApi.Template",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "preferNameDirectory": true
+}
