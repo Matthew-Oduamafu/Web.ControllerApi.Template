@@ -21,6 +21,7 @@ default templates but extends the foundation with various practical configuratio
 - **Navigate to the project directory**: `cd Web.ControllerApi.Template`
 - **Install dependencies**: `dotnet restore`
 - **Run the application**: `dotnet run`
+- **Install the template**: `dotnet new install .`
 
 The API should now be running on `https://localhost:5001/` (or another assigned port).
 
