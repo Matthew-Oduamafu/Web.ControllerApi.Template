@@ -24,6 +24,11 @@ public class EmployeeRepository : IEmployeeRepository
         return await _dbContext.Employees.AsTracking().ToListAsync();
     }
 
+    public IQueryable<Employee> GetEmployeesAsQueryable()
+    {
+        return _dbContext.Employees;
+    }
+
     public async Task<Employee> AddEmployeeAsync(Employee employee)
     {
         await _dbContext.Employees.AddAsync(employee);

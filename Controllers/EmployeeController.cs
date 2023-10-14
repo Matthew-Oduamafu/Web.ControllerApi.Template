@@ -1,6 +1,7 @@
 ﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using Web.ControllerApi.Template.Extensions;
 using Web.ControllerApi.Template.Models;
 using Web.ControllerApi.Template.Models.Dtos;
 using Web.ControllerApi.Template.Services.Interfaces;
@@ -8,16 +9,20 @@ using Web.ControllerApi.Template.Services.Interfaces;
 namespace Web.ControllerApi.Template.Controllers;
 
 [ApiController]
-[Route("api/[controller]/[action]")]
+[Route("api/[controller]")]
 [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
 [ApiVersion("1.0")]
 public class EmployeeController : BaseController
 {
     private readonly IEmployeeService _employeeService;
+    private readonly LinkGenerator _linkGenerator;
+    private HttpContext _httpContext => ControllerContext.HttpContext;
 
-    public EmployeeController(IEmployeeService employeeService)
+
+    public EmployeeController(IEmployeeService employeeService, LinkGenerator linkGenerator)
     {
         _employeeService = employeeService;
+        _linkGenerator = linkGenerator;
     }
 
     /// <summary>
@@ -65,7 +70,7 @@ public class EmployeeController : BaseController
     /// <returns>The details of the specified employee wrapped in an ApiResponse object.</returns>
     /// <response code="200">Returns the employee details.</response>
     /// <response code="400">If the ID is not valid or any other error occurs.</response>
-    [HttpGet("{id}")]
+    [HttpGet("{id}", Name = nameof(Get))]
     [Produces(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<EmployeeResponse>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ApiResponse<object>))]
@@ -123,7 +128,7 @@ public class EmployeeController : BaseController
     /// <returns>A list of employee details wrapped in an ApiResponse object.</returns>
     /// <response code="200">Returns the details of all employees.</response>
     /// <response code="400">If any error occurs during the fetch operation.</response>
-    [HttpGet("all")]
+    [HttpGet("all", Name = nameof(GetAll))]
     [Produces(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<IEnumerable<EmployeeResponse>>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ApiResponse<object>))]
@@ -133,6 +138,72 @@ public class EmployeeController : BaseController
         var apiResponse = await _employeeService.GetEmployeesAsync();
         return ToActionResult(apiResponse);
     }
+
+    /// <summary>
+    /// Retrieves a paged list of employees based on the provided filter.
+    /// </summary>
+    /// <remarks>
+    /// Sample request:
+    ///
+    ///     GET /api/yourcontrollername/paged-list?page=1&pageSize=10&otherFilters...
+    ///
+    /// Sample successful response:
+    /// 
+    ///     {
+    ///         "Message": "Success",
+    ///         "Code": 200,
+    ///         "Data": {
+    ///             "Page": 1,
+    ///             "PageSize": 10,
+    ///             "TotalPages": 5,
+    ///             "TotalCount": 50,
+    ///             "Items": [
+    ///                 {
+    ///                     "Id": "123e4567e89b12d3a456426614174001",
+    ///                     "Name": "John Doe",
+    ///                     "DOB": "1990-01-01T00:00:00",
+    ///                     "JobTitle": "Software Engineer",
+    ///                     "Salary": 75000,
+    ///                     "HireDate": "2020-05-01T00:00:00",
+    ///                     "CreatedAt": "2022-01-01T00:00:00",
+    ///                     "Age": 33
+    ///                 },
+    ///                 // Additional employee items...
+    ///             ]
+    ///         },
+    ///         "Errors": null
+    ///     }
+    ///
+    /// Sample error response:
+    ///
+    ///     {
+    ///         "Message": "Error occurred while fetching paged employee list",
+    ///         "Code": 500,
+    ///         "Data": null,
+    ///         "Errors": [
+    ///             {
+    ///                 "Field": "general",
+    ///                 "ErrorMessage": "Internal server error"
+    ///             }
+    ///         ]
+    ///     }
+    ///
+    /// </remarks>
+    /// <param name="filter">The filter criteria for paging and filtering employee list.</param>
+    /// <returns>An ApiResponse object containing the paged list of employee details.</returns>
+    /// <response code="200">Returns the paged list of employees.</response>
+    /// <response code="500">If an error occurs during the fetch operation.</response>
+    [HttpGet("paged-list", Name = nameof(GetPageList))]
+    [Produces(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<PagedList<EmployeeResponse>>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ApiResponse<object>))]
+    [SwaggerOperation(nameof(GetPageList), OperationId = nameof(GetPageList))]
+    public async Task<IActionResult> GetPageList([FromQuery] BaseFilter filter)
+    {
+        var apiResponse = await _employeeService.GetEmployees(filter);
+        return ToActionResult(apiResponse);
+    }
+
 
     /// <summary>
     /// Creates a new employee based on the provided details.
@@ -187,7 +258,7 @@ public class EmployeeController : BaseController
     /// <returns>The details of the newly created employee wrapped in an ApiResponse object.</returns>
     /// <response code="200">Returns the details of the newly created employee.</response>
     /// <response code="400">If there are validation errors or any other issues during the creation process.</response>
-    [HttpPost("create")]
+    [HttpPost("create", Name = nameof(Create))]
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<EmployeeResponse>))]
@@ -196,6 +267,15 @@ public class EmployeeController : BaseController
     public async Task<IActionResult> Create([FromBody] EmployeeRequest request)
     {
         var apiResponse = await _employeeService.AddEmployeeAsync(request);
+        apiResponse.Data?.Links.Add(new Link(
+            _linkGenerator.GetUriByName(_httpContext, nameof(Get), new { id = apiResponse.Data.Id }), "self",
+            "GET"));
+        apiResponse.Data?.Links.Add(new Link(
+            _linkGenerator.GetUriByName(_httpContext, nameof(Update),
+                new { id = apiResponse.Data.Id }), "update-employee", "PUT"));
+        apiResponse.Data?.Links.Add(new Link(
+            _linkGenerator.GetUriByName(_httpContext, nameof(Delete), new { id = apiResponse.Data.Id }),
+            "delete-employee", "DELETE"));
         return ToActionResult(apiResponse);
     }
 
@@ -258,7 +338,7 @@ public class EmployeeController : BaseController
     /// <returns>The details of the updated employee wrapped in an ApiResponse object.</returns>
     /// <response code="200">Returns the details of the updated employee.</response>
     /// <response code="400">If there are validation errors, the employee doesn't exist, or any other issues during the update process.</response>
-    [HttpPut("update/{id}")]
+    [HttpPut("update/{id}", Name = nameof(Update))]
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<EmployeeResponse>))]
@@ -311,7 +391,7 @@ public class EmployeeController : BaseController
     /// <returns>An ApiResponse object indicating the result of the deletion.</returns>
     /// <response code="200">Returns the details of the deleted employee.</response>
     /// <response code="404">If the employee with the given ID does not exist.</response>
-    [HttpDelete("delete/{id}")]
+    [HttpDelete("delete/{id}", Name = nameof(Delete))]
     [Produces(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<EmployeeResponse>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<object>))]

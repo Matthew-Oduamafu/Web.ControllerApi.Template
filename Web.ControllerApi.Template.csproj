@@ -4,11 +4,22 @@
         <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>true</IsPackable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Title>Web.ControllerApi.Template</Title>
+        <Authors>Matthew Oduamafu</Authors>
+        <Description>Web.ControllerApi.Template is an enhanced ASP.NET Core API template designed for rapid development. It extends standard templates with pre-configured services, ApplicationDbContext, custom API responses, error handling, and more, offering a robust starting point for controller-centric API projects.</Description>
+        <RepositoryUrl>https://github.com/Matthew-Oduamafu/Web.ControllerApi.Template</RepositoryUrl>
+        <RepositoryType>Public</RepositoryType>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <DocumentationFile>bin\Debug\Web.ControllerApi.Template.xml</DocumentationFile>
+        <DocumentationFile>bin\Debug\net7.0\Web.ControllerApi.Template.xml</DocumentationFile>
         <NoWarn>1591</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DocumentationFile>bin\Release\net7.0\Web.ControllerApi.Template.xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
