@@ -427,4 +427,22 @@ ScaffoldingReadMe.txt
 *.zip
 *.rar
 .DS_Store
-node_modules/
+node_modules/# JetBrains Rider-specific files and folders
+.idea/
+*.iml
+.rider/
+*.rider.user
+# Visual Studio-specific files and folders
+.vs/
+*.csproj.user
+*.rsuser
+*jfm
+_ReSharper.*
+# Visual Studio Code-specific files and folders
+.vscode/
+# ASP.NET Core
+bin/
+obj/
+*.user
+*.suo
+*.log
