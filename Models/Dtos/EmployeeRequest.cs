@@ -1,9 +1,12 @@
-﻿#pragma warning disable CS8618
+﻿using System.ComponentModel.DataAnnotations;
+
+#pragma warning disable CS8618
 
 namespace Web.ControllerApi.Template.Models.Dtos;
 
 public class EmployeeRequest
 {
+    [Required(AllowEmptyStrings = false, ErrorMessage = "Employee name is required")]
     public string Name { get; set; }
     public DateTime Dob { get; set; }
     public string JobTitle { get; set; }

@@ -60,9 +60,10 @@ public class EmployeeService : IEmployeeService
         try
         {
             var employees = await _employeeRepository.GetEmployeesAsQueryable()
+                .ProjectToType<EmployeeResponse>()
                 .ToPagedList(filter.Page, filter.PageSize);
 
-            return employees.Adapt<PagedList<EmployeeResponse>>().ToOkApiResponse();
+            return employees.ToOkApiResponse();
         }
         catch (Exception ex)
         {

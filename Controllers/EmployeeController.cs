@@ -15,14 +15,13 @@ namespace Web.ControllerApi.Template.Controllers;
 public class EmployeeController : BaseController
 {
     private readonly IEmployeeService _employeeService;
-    private readonly LinkGenerator _linkGenerator;
-    private HttpContext _httpContext => ControllerContext.HttpContext;
+    private readonly ILinkService _linkService;
 
 
-    public EmployeeController(IEmployeeService employeeService, LinkGenerator linkGenerator)
+    public EmployeeController(IEmployeeService employeeService, LinkGenerator linkGenerator, ILinkService linkService)
     {
         _employeeService = employeeService;
-        _linkGenerator = linkGenerator;
+        _linkService = linkService;
     }
 
     /// <summary>
@@ -78,6 +77,7 @@ public class EmployeeController : BaseController
     public async Task<IActionResult> Get(string id)
     {
         var apiResponse = await _employeeService.GetEmployeeByIdAsync(id);
+        AddLinksForEmployee(apiResponse);
         return ToActionResult(apiResponse);
     }
 
@@ -145,7 +145,7 @@ public class EmployeeController : BaseController
     /// <remarks>
     /// Sample request:
     ///
-    ///     GET /api/yourcontrollername/paged-list?page=1&pageSize=10&otherFilters...
+    ///     GET /api/employee/paged-list?Page=1&amp;PageSize=10
     ///
     /// Sample successful response:
     /// 
@@ -201,6 +201,7 @@ public class EmployeeController : BaseController
     public async Task<IActionResult> GetPageList([FromQuery] BaseFilter filter)
     {
         var apiResponse = await _employeeService.GetEmployees(filter);
+        AddLinksForPagedEmployee(apiResponse, filter);
         return ToActionResult(apiResponse);
     }
 
@@ -267,15 +268,7 @@ public class EmployeeController : BaseController
     public async Task<IActionResult> Create([FromBody] EmployeeRequest request)
     {
         var apiResponse = await _employeeService.AddEmployeeAsync(request);
-        apiResponse.Data?.Links.Add(new Link(
-            _linkGenerator.GetUriByName(_httpContext, nameof(Get), new { id = apiResponse.Data.Id }), "self",
-            "GET"));
-        apiResponse.Data?.Links.Add(new Link(
-            _linkGenerator.GetUriByName(_httpContext, nameof(Update),
-                new { id = apiResponse.Data.Id }), "update-employee", "PUT"));
-        apiResponse.Data?.Links.Add(new Link(
-            _linkGenerator.GetUriByName(_httpContext, nameof(Delete), new { id = apiResponse.Data.Id }),
-            "delete-employee", "DELETE"));
+        AddLinksForEmployee(apiResponse);
         return ToActionResult(apiResponse);
     }
 
@@ -347,6 +340,7 @@ public class EmployeeController : BaseController
     public async Task<IActionResult> Update([FromRoute] string id, [FromBody] EmployeeRequest request)
     {
         var apiResponse = await _employeeService.UpdateEmployeeAsync(id, request);
+        AddLinksForEmployee(apiResponse);
         return ToActionResult(apiResponse);
     }
 
@@ -400,5 +394,38 @@ public class EmployeeController : BaseController
     {
         var apiResponse = await _employeeService.DeleteEmployeeAsync(id);
         return ToActionResult(apiResponse);
+    }
+
+    private void AddLinksForEmployee(IApiResponse<EmployeeResponse> apiResponse)
+    {
+        apiResponse.Data?.Links.Add(
+            _linkService.GenerateLink(nameof(Get), new { id = apiResponse.Data.Id }, "self", "GET"));
+        apiResponse.Data?.Links.Add(
+            _linkService.GenerateLink(nameof(Update), new { id = apiResponse.Data.Id }, "update-employee", "PUT"));
+        apiResponse.Data?.Links.Add(
+            _linkService.GenerateLink(nameof(Delete), new { id = apiResponse.Data.Id }, "delete-employee", "DELETE"));
+    }
+
+    private void AddLinksForPagedEmployee(IApiResponse<PagedList<EmployeeResponse>> apiResponse, BaseFilter filter)
+    {
+        if (apiResponse.Data?.Items == null || !apiResponse.Data.Items.Any()) return;
+
+        apiResponse.Data.Links.Add(
+            _linkService.GenerateLink(nameof(GetPageList),
+                new { Page = filter.Page, PageSize = filter.PageSize }, "self", "GET"));
+        
+        if (apiResponse.Data.Page > 1)
+        {
+            apiResponse.Data.Links.Add(
+                _linkService.GenerateLink(nameof(GetPageList),
+                    new { Page = filter.Page - 1, PageSize = filter.PageSize }, "previous-page", "GET"));
+        }
+
+        if (apiResponse.Data.Page < apiResponse.Data.TotalPages)
+        {
+            apiResponse.Data.Links.Add(
+                _linkService.GenerateLink(nameof(GetPageList),
+                    new { Page = filter.Page + 1, PageSize = filter.PageSize }, "next-page", "GET"));
+        }
     }
 }

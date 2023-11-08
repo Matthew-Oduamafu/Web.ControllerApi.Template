@@ -3,6 +3,7 @@ namespace Web.ControllerApi.Template.Models;
 public sealed class PagedList<T> : BasePagedList where T : class
 {
     public List<T> Items { get; set; } = new();
+    public List<Link> Links { get; set; } = new();
 
     public PagedList()
     {
@@ -28,8 +29,12 @@ public class BasePagedList
     }
 
     private int MinPageSize { get; init; } = 10;
+    
+    public bool HasPreviousPage => Page > 1;
+    
+    public bool HasNextPage => Page < TotalPages;
 
-    protected int PageSize
+    public int PageSize
     {
         get => MinPageSize;
         init => MinPageSize = value > 0 ? value : 10;
