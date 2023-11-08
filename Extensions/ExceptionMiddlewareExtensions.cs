@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.SwaggerUI;
 using Web.ControllerApi.Template.CustomMiddlewares;
 using Web.ControllerApi.Template.Data;
 
@@ -16,8 +17,15 @@ public static class ExceptionMiddlewareExtensions
         app.UseSwagger();
         app.UseSwaggerUI(c =>
         {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API V1");
             c.RoutePrefix = "swagger";
+            
+            // Optionally, enable XML documentation support in Swagger UI:
+            c.DefaultModelRendering(ModelRendering.Example);
+            c.EnableFilter();
+            c.DocExpansion(DocExpansion.None);
+            c.EnableDeepLinking();
+            c.DefaultModelExpandDepth(6);
         });
     }
 

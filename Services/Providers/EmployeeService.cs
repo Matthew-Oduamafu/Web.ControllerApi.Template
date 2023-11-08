@@ -1,5 +1,6 @@
 ﻿using Mapster;
 using Web.ControllerApi.Template.Data.Entities;
+using Web.ControllerApi.Template.Extensions;
 using Web.ControllerApi.Template.Models;
 using Web.ControllerApi.Template.Models.Dtos;
 using Web.ControllerApi.Template.Repositories.Interfaces;
@@ -51,6 +52,23 @@ public class EmployeeService : IEmployeeService
         {
             _logger.LogError(ex, "Error occurred while getting employees");
             return ApiResponse<IReadOnlyList<EmployeeResponse>>.Default.ToInternalServerErrorApiResponse();
+        }
+    }
+
+    public async Task<IApiResponse<PagedList<EmployeeResponse>>> GetEmployees(BaseFilter filter)
+    {
+        try
+        {
+            var employees = await _employeeRepository.GetEmployeesAsQueryable()
+                .ProjectToType<EmployeeResponse>()
+                .ToPagedList(filter.Page, filter.PageSize);
+
+            return employees.ToOkApiResponse();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while getting employees");
+            return ApiResponse<PagedList<EmployeeResponse>>.Default.ToInternalServerErrorApiResponse();
         }
     }
 

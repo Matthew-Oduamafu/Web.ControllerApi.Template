@@ -5,7 +5,7 @@ namespace Web.ControllerApi.Template.Controllers;
 
 public abstract class BaseController : ControllerBase
 {
-    public IActionResult ToActionResult<T>(IApiResponse<T> apiResponse)
+    protected IActionResult ToActionResult<T>(IApiResponse<T> apiResponse)
     {
         return StatusCode(apiResponse.Code, apiResponse);
     }

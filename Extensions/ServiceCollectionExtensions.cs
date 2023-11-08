@@ -26,6 +26,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddScoped<IEmployeeService, EmployeeService>();
+        services.AddScoped<ILinkService, LinkService>();
         return services;
     }
 
@@ -85,7 +86,7 @@ public static class ServiceCollectionExtensions
             });
 
             c.EnableAnnotations();
-
+            
             // Optionally, add XML comments:
             var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);

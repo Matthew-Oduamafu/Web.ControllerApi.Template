@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDatabaseConfiguration(builder.Configuration);
 builder.Services.AddRepositories();
 builder.Services.AddServices();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddControllerConfiguration();
 
